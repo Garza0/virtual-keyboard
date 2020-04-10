@@ -1,3 +1,9 @@
+:root{
+  --btnWidth: 50px;
+  --buttonWidth-xl: calc(var(--btnWidth) * 1.4);
+  --buttonWidth-xxl: calc(var(--btnWidth) * 1.5);
+  }
+
 body {
   font-family: 'Roboto', sans-serif;
 }
@@ -18,7 +24,7 @@ textarea {
 
 .keyboardSection {
   display: flex;
-  flex-direction: column;
+  flex-flow: row wrap;
   width: 860px;
   height: 300px;
   border-radius: 5px;
@@ -39,14 +45,14 @@ textarea {
 }
 
 .keyboard__key {
-  width: 50px;
-  height: 50px;
+  width: var(--btnWidth);
+  height: var(--btnWidth);
   background-color: #33675D;
   color: white;
   border-radius: 3px;
   margin: 4px;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   position: relative;
   align-items: center;
   justify-content: center;
@@ -65,46 +71,48 @@ textarea {
   margin: 8px 6px 4px 2px; 
 }
 
-.keyboard__key[keycode="space"] {
+.space {
   width: 282px;
 }
 
 
-.keyboard__key[keycode="shiftleft"] {
-  width: 75px;
+.shiftleft {
+  width: var(--buttonWidth-xxl);
 }
 
-.keyboard__key[keycode="shiftright"] {
-  width: 70px;
+.shiftright {
+  width: var(--buttonWidth-xl);
 }
 
-.keyboard__key[keycode="enter"] {
+.enter {
   width: 108px;
 }
 
 
 
-.keyboard__key[keycode="controlleft"] {
-  width: 75px;
+.controlleft {
+  width: var(--buttonWidth-xxl);
 }
 
-.keyboard__key[keycode="controlright"] {
-  width: 70px;
+.controlright {
+  width: var(--buttonWidth-xl);
 }
 
-.keyboard__key[keycode="backspace"], .keyboard__key[keycode="capslock"] {
+.backspace,
+.capslock {
   width: 95px;
 }
 
-.keyboard__key[keycode="tab"] {
-  width: 50px;
+.tab {
+  width: var(--btnWidth);
 }
 
-.keyboard__key[keycode="delete"] {
+.delete {
   width: 37px;
 }
 
-.keyboard__key[keycode="keyf"]::after, .keyboard__key[keycode="keyj"]::after {
+.keyf::after,
+.keyj::after {
   content: '';
   width: 15px;
   height: 2px;
