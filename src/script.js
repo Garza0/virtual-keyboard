@@ -160,43 +160,54 @@ function onMouseDownOrOnKeyDownSwitchCase(keycodeAttributeValue, buttonInnerText
     case 'shiftleft':
     case 'shiftright':
       shiftState = true;
-      return capsLkAndShiftHandler();
+      capsLkAndShiftHandler();
+      return;
     case 'capslock':
-      return capsLkAndShiftHandler();
+      capsLkAndShiftHandler();
+      return;
     case 'space':
-      return addCharacter(' ');
+      addCharacter(' ');
+      return;
     case 'tab':
-      return addCharacter('  ');
+      addCharacter('  ');
+      return;
     case 'enter':
-      return addCharacter('\n');
+      addCharacter('\n');
+      return;
     case 'controlleft':
     case 'controlright':
     case 'contextmenu':
-      break;
+      return;
     case 'altleft':
     case 'altright':
       if (shiftState) {
         changeLangHandler();
       }
-      break;
+      return;
     case 'metaleft':
-      return changeLangHandler();
+      changeLangHandler();
+      return;
     case 'backspace':
-      return backspaceHandler();
+      backspaceHandler();
+      return;
     case 'delete':
-      return deleteHandler();
+      deleteHandler();
+      return;
     case 'arrowleft':
-      return moveTextCursor('arrowleft');
+      moveTextCursor('arrowleft');
+      return;
     case 'arrowright':
-      return moveTextCursor('arrowright');
+      moveTextCursor('arrowright');
+      return;
     case 'arrowdown':
-      return moveTextCursor('arrowdown');
+      moveTextCursor('arrowdown');
+      return;
     case 'arrowup':
-      return moveTextCursor('arrowup');
+      moveTextCursor('arrowup');
+      return;
 
     default: addCharacter(buttonInnerText);
   }
-  return undefined;
 }
 
 function addMouseEvents() {
@@ -221,12 +232,13 @@ function addMouseEvents() {
         case 'shiftleft':
         case 'shiftright':
           shiftState = false;
-          return capsLkAndShiftHandler();
+          capsLkAndShiftHandler();
+          return;
         default:
           break;
       }
 
-      return textarea.focus();
+      textarea.focus();
     };
   });
 }
@@ -256,7 +268,7 @@ function addKeyboardEvents() {
       case 'shiftright':
         shiftState = false;
         capsLkAndShiftHandler();
-        break;
+        return;
       default:
         break;
     }
