@@ -33,38 +33,35 @@ const restoreLangState = () => {
 };
 
 
-function returnValueFromObj(keyId, lang, valueCase) {
-  if (Object.prototype.hasOwnProperty.call(keys[keyId], valueCase)) {
-    return keys[keyId][valueCase];
+function returnCharacterFromKeysObj(keyCodeAttribute, keyboardLanguage, characterCase) {
+  if (Object.prototype.hasOwnProperty.call(keys[keyCodeAttribute], characterCase)) {
+    return keys[keyCodeAttribute][characterCase];
   }
 
-  if (Object.prototype.hasOwnProperty.call(keys[keyId], lang)) {
-    if (Object.prototype.hasOwnProperty.call(keys[keyId][lang], valueCase)) {
-      return keys[keyId][lang][valueCase];
+  if (Object.prototype.hasOwnProperty.call(keys[keyCodeAttribute], keyboardLanguage)) {
+    if (Object.prototype.hasOwnProperty
+      .call(keys[keyCodeAttribute][keyboardLanguage], characterCase)) {
+      return keys[keyCodeAttribute][keyboardLanguage][characterCase];
     }
-    return keys[keyId][lang].value;
+    return keys[keyCodeAttribute][keyboardLanguage].value;
   }
-  return keys[keyId].value;
+  return keys[keyCodeAttribute].value;
 }
 
+const populateKeys = (keyLine) => keyLine.map((key) => `<div class="keyboard__key ${key}" keycode="${key}"> </div>`).join('\n');
+
+const populateLines = (keyboard) => keyboard.map((line) => `<div class="keyboard__line"> ${populateKeys(line)} </div>`).join('\n');
+
 function keyboardRenderWithoutCharacters() {
-  let out = '';
-  let line = '';
-  for (let i = 0; i < keyMap.length; i += 1) {
-    line = '';
-    for (let k = 0; k < keyMap[i].length; k += 1) {
-      line += `<div class="keyboard__key" keycode="${keyMap[i][k]}" > </div>`;
-    }
-    out += `<div class="keyboard__line"> ${line} </div>`;
-  }
-  keyboardSection.innerHTML = out;
+  keyboardSection.innerHTML = populateLines(keyMap);
+
   keyboardKeys = document.querySelectorAll('.keyboard__key');
 }
 
 function keyboardCharactersRender(lang, shiftValue) {
   document.querySelectorAll('.keyboard__key').forEach((element) => {
-    const keyCodeAttribute = element.attributes.keycode.value;
-    element.innerText = returnValueFromObj(keyCodeAttribute, lang, shiftValue);
+    const keyCodeAttributeValue = element.attributes.keycode.value;
+    element.innerText = returnCharacterFromKeysObj(keyCodeAttributeValue, lang, shiftValue);
   });
 }
 
@@ -75,19 +72,22 @@ function changeLangHandler() {
   keyboardCharactersRender(language, valueOrShiftValue);
 }
 
+const getTextAreaSelectionPosition = () => ({
+  start: textarea.selectionStart,
+  end: textarea.selectionEnd,
+});
 
 function addCharacter(char) {
-  const startSelection = textarea.selectionStart;
-  const endSelection = textarea.selectionEnd;
+  const { start, end } = getTextAreaSelectionPosition();
   const textArr = textarea.value.split('');
   if (textarea.selectionEnd - textarea.selectionStart > 0) {
-    textArr.splice(startSelection, endSelection - startSelection, char);
+    textArr.splice(start, end - start, char);
     textarea.value = textArr.join('');
-    textarea.selectionEnd = startSelection + char.length;
-  } else if (textarea.value.length > endSelection) {
-    textArr.splice(endSelection, 0, char);
+    textarea.selectionEnd = start + char.length;
+  } else if (textarea.value.length > end) {
+    textArr.splice(end, 0, char);
     textarea.value = textArr.join('');
-    textarea.selectionEnd = startSelection + char.length;
+    textarea.selectionEnd = start + char.length;
     textarea.selectionStart = textarea.selectionEnd;
   } else {
     textarea.value += char;
@@ -95,29 +95,27 @@ function addCharacter(char) {
 }
 
 function backspaceHandler() {
-  const startSelection = textarea.selectionStart;
-  const endSelection = textarea.selectionEnd;
+  const { start, end } = getTextAreaSelectionPosition();
   const textArr = textarea.value.split('');
-  if (endSelection - startSelection > 0) {
-    textArr.splice(startSelection, endSelection - startSelection);
+  if (end - start > 0) {
+    textArr.splice(start, end - start);
   } else {
-    textArr.splice(endSelection - 1, 1);
+    textArr.splice(end - 1, 1);
   }
   textarea.value = textArr.join('');
-  textarea.selectionEnd = startSelection - 1;
+  textarea.selectionEnd = start - 1;
 }
 
 function deleteHandler() {
-  const startSelection = textarea.selectionStart;
-  const endSelection = textarea.selectionEnd;
+  const { start, end } = getTextAreaSelectionPosition();
   const textArr = textarea.value.split('');
-  if (endSelection - startSelection > 0) {
-    textArr.splice(startSelection, endSelection - startSelection);
+  if (end - start > 0) {
+    textArr.splice(start, end - start);
   } else {
-    textArr.splice(endSelection, 1);
+    textArr.splice(end, 1);
   }
   textarea.value = textArr.join('');
-  textarea.selectionEnd = startSelection;
+  textarea.selectionEnd = start;
 }
 
 function moveTextCursor(buttonKeyCode) {
@@ -125,17 +123,17 @@ function moveTextCursor(buttonKeyCode) {
     case 'arrowleft':
       textarea.selectionEnd -= 1;
       textarea.selectionStart = textarea.selectionEnd;
-      break;
+      return;
     case 'arrowright':
       textarea.selectionEnd += 1;
       textarea.selectionStart = textarea.selectionEnd;
-      break;
+      return;
     case 'arrowdown':
       if (textarea.selectionEnd + 119 <= textarea.value.length) {
         const diff = textarea.selectionEnd - textarea.selectionStart;
         textarea.selectionStart += (119 + diff);
       }
-      break;
+      return;
     case 'arrowup':
       if (textarea.selectionEnd - 119 >= 0) {
         textarea.selectionEnd -= 119;
@@ -149,13 +147,12 @@ function moveTextCursor(buttonKeyCode) {
 
 
 function capsLkAndShiftHandler() {
-  if (capsLkState) {
+  if (capsLkState === true) {
     keyboardCharactersRender(language, 'value');
-    capsLkState = false;
   } else {
     keyboardCharactersRender(language, 'shiftValue');
-    capsLkState = true;
   }
+  capsLkState = !capsLkState;
 }
 
 function onMouseDownOrOnKeyDownSwitchCase(keycodeAttributeValue, buttonInnerText) {
@@ -163,20 +160,15 @@ function onMouseDownOrOnKeyDownSwitchCase(keycodeAttributeValue, buttonInnerText
     case 'shiftleft':
     case 'shiftright':
       shiftState = true;
-      capsLkAndShiftHandler();
-      break;
+      return capsLkAndShiftHandler();
     case 'capslock':
-      capsLkAndShiftHandler();
-      break;
+      return capsLkAndShiftHandler();
     case 'space':
-      addCharacter(' ');
-      break;
+      return addCharacter(' ');
     case 'tab':
-      addCharacter('  ');
-      break;
+      return addCharacter('  ');
     case 'enter':
-      addCharacter('\n');
-      break;
+      return addCharacter('\n');
     case 'controlleft':
     case 'controlright':
     case 'contextmenu':
@@ -188,29 +180,23 @@ function onMouseDownOrOnKeyDownSwitchCase(keycodeAttributeValue, buttonInnerText
       }
       break;
     case 'metaleft':
-      changeLangHandler();
-      break;
+      return changeLangHandler();
     case 'backspace':
-      backspaceHandler();
-      break;
+      return backspaceHandler();
     case 'delete':
-      deleteHandler();
-      break;
+      return deleteHandler();
     case 'arrowleft':
-      moveTextCursor('arrowleft');
-      break;
+      return moveTextCursor('arrowleft');
     case 'arrowright':
-      moveTextCursor('arrowright');
-      break;
+      return moveTextCursor('arrowright');
     case 'arrowdown':
-      moveTextCursor('arrowdown');
-      break;
+      return moveTextCursor('arrowdown');
     case 'arrowup':
-      moveTextCursor('arrowup');
-      break;
+      return moveTextCursor('arrowup');
 
     default: addCharacter(buttonInnerText);
   }
+  return undefined;
 }
 
 function addMouseEvents() {
@@ -235,19 +221,19 @@ function addMouseEvents() {
         case 'shiftleft':
         case 'shiftright':
           shiftState = false;
-          capsLkAndShiftHandler();
-          break;
+          return capsLkAndShiftHandler();
         default:
           break;
       }
 
-      textarea.focus();
+      return textarea.focus();
     };
   });
 }
 
 function addKeyboardEvents() {
   document.onkeydown = function onKeyDownKeyboard(event) {
+    if (!keys[event.code.toLocaleLowerCase()]) { return; }
     const eventKey = document.querySelector(`[keycode="${event.code.toLowerCase()}"]`);
 
     if (event.code.toLowerCase() === 'capslock') {
@@ -259,6 +245,7 @@ function addKeyboardEvents() {
   };
 
   document.onkeyup = function onKeyUpKeyboard(event) {
+    if (!keys[event.code.toLocaleLowerCase()]) { return; }
     const eventKey = document.querySelector(`[keycode="${event.code.toLowerCase()}"]`);
     if (event.code.toLowerCase() !== 'capslock') {
       eventKey.classList.remove('keyboard__key--active');
